@@ -1,10 +1,14 @@
 from data.data_pipe import de_preprocess, get_train_loader, get_train_loader_rec, get_val_data, get_val_lfw_data
 from model import Backbone, Arcface,  Am_softmax, l2_norm
-from model.ShuffleNet_V2.shuffleNet_V2 import ShuffleNetV2
-from model.mobilenet_v2.MobileNetV2 import MobileNetV2
-from model.squeezenet_v2.squeezenet_v2 import squeezenet1_1
+from models.ShuffleNet_V2.shuffleNet_V2 import ShuffleNetV2
+from models.mobilenet_v2.MobileNetV2 import MobileNetV2
+from models.squeezenet_v2.squeezenet_v2 import squeezenet1_1
 from model import MobileFaceNet_sor, MobileFaceNet_22, MobileFaceNet_y2, MobileFaceNet_23, MobileFaceNet_y2_se
+
+from model import MobileFaceNet_y2_3, MobileFaceNet_y2_4, MobileFaceNet_y2_5, mf_y2_mbv2_t6
 # from model.facenet.model_lib import FaceNet_20
+from models.mobilenetv3.mobilenetv3 import MobileNetV3_Small, MobileNetV3_Large
+from models.mf_sknet.mf_y2_sknet import mf_y2_sknet, mf_y2_sknet_res
 from verifacation_zhu import evaluate, evaluate_all
 import torch
 from torch import optim
@@ -16,9 +20,11 @@ from utils import get_time, gen_plot, hflip_batch, separate_bn_paras
 from PIL import Image
 from torchvision import transforms as trans
 import math
+from collections import OrderedDict
+
 import bcolz
 import os
-from model.resnet.resnet import resnet18,resnet34
+from models.resnet.resnet import resnet18,resnet34
 from adabound import AdaBound
 from optimizer import get_parser, create_optimizer
 plt.switch_backend('agg')
@@ -31,7 +37,7 @@ class face_learner(object):
         print('/......................................................................................................')
         if conf.use_mobilfacenet:
             # mobilefacenet模型初始化
-            self.model = MobileFaceNet_y2_se(conf.embedding_size).to(conf.device)
+            self.model = mf_y2_sknet_res(conf.embedding_size).to(conf.device)
             print('MobileFaceNet model generated')
         else:
             if conf.net_mode == 'ir' or conf.net_mode == 'ir_se':
@@ -59,10 +65,26 @@ class face_learner(object):
             else:
                 print('出现错误，请停止训练')
 
-
+        conf.fine_tune = True
         if conf.fine_tune:
-            model_path = '/home/yeluyue/yeluyue/InsightFace_Pytorch-master/work_space/models/model_2019-05-16-15-59_accuracy:0.0_step:64790_None.pth'
-            self.model.load_state_dict(torch.load(model_path))
+            model_path = '/home/yeluyue/yeluyue/InsightFace_Pytorch-master/work_space/Msceleb_clean_zhu_mf_y2_sknet_res_0.4_lr_e-1/save/model_2019-06-12-14-56_accuracy:0.9862105_step:690620_final.pth'
+            checkpoint = torch.load(model_path)
+            model_dict = torch.load(model_path)
+            # model_dict = checkpoint['state_dict']
+            keys = iter(model_dict)
+            first_layer_name = keys.__next__()
+            if first_layer_name[:7].find('module.') >= 0:
+                new_state_dict = OrderedDict()
+                for k, v in model_dict.items():
+                    name_key = k[7:]  # remove `module.`
+                    new_state_dict[name_key] = v
+                # load params
+                self.model.load_state_dict(new_state_dict)
+            else:
+                self.model.load_state_dict(model_dict)
+
+            # self.model.load_state_dict(checkpoint['state_dict'])
+            print("fine_tune the model: ", model_path)
 
         if not inference:
             self.milestones = conf.milestones
@@ -75,8 +97,8 @@ class face_learner(object):
             self.writer = SummaryWriter(str(conf.log_path))
             self.step = 0
             #初始化arcface模型
-            head_path = '/home/yeluyue/dl/Datasets/work_space/ICCV2019_workspace/Msceleb_clean_zhu_mobilefacenet22_0.4_lr_e-1/save/head_2019-05-14-09-57_accuracy:0.0_step:2123636_None.pth'
-            # head_path = '/home/yeluyue/dl/Datasets/work_space/ICCV2019_workspace/Msceleb_clean_zhu_10k_mobilefacenet_21_0.4_lr_e-1/save/head_2019-05-09-01-29_accuracy:0.0_step:117800_final.pth'
+            head_path = '/home/yeluyue/yeluyue/InsightFace_Pytorch-master/work_space/pre_head/head/all/head_2019-05-20-08-04_accuracy:0.0_step:1139512_None.pth'
+            # head_path = '/home/yeluyue/yeluyue/InsightFace_Pytorch-master/work_space/pre_head/head/10k/head_2019-05-17-05-02_accuracy:0.0_step:111910_None.pth'
 
             self.head = Arcface(embedding_size=conf.embedding_size, classnum=self.class_num).to(conf.device)
             self.head.load_state_dict(torch.load(head_path))
@@ -150,7 +172,7 @@ class face_learner(object):
 
             print('optimizers generated')    
             self.board_loss_every = len(self.loader)//1000
-            self.evaluate_every = len(self.loader)//10
+            self.evaluate_every = len(self.loader)//5
             self.save_every = len(self.loader)//1
 
             print('处理的数据集大小:', len(self.loader))
@@ -380,14 +402,14 @@ class face_learner(object):
                 self.schedule_lr()
             if e == self.milestones[3]:
                 self.schedule_lr()
-            if e == self.milestones[4]:
-                self.schedule_lr()
-            if e == self.milestones[5]:
-                self.schedule_lr()
-            if e == self.milestones[6]:
-                self.schedule_lr()
-            if e == self.milestones[7]:
-                self.schedule_lr()
+            # if e == self.milestones[4]:
+            #     self.schedule_lr()
+            # if e == self.milestones[5]:
+            #     self.schedule_lr()
+            # if e == self.milestones[6]:
+            #     self.schedule_lr()
+            # if e == self.milestones[7]:
+            #     self.schedule_lr()
             for imgs, labels in tqdm(iter(self.loader)):
                 imgs = imgs.to(conf.device)
                 labels = labels.to(conf.device)
@@ -444,7 +466,6 @@ class face_learner(object):
 
     def schedule_lr(self):
         for params in self.optimizer.param_groups:                 
-            # params['lr'] /= 5
             params['lr'] /= 10
         print(self.optimizer)
     

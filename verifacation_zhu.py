@@ -173,7 +173,7 @@ def evaluate(embeddings, actual_issame, nrof_folds=10, pca=0):
     thresholds = np.arange(0, 4, 0.001)
 
     tpr, fpr, accuracy, best_thresholds, thresholds = calculate_roc_self(embeddings1, embeddings2,
-                                                                         actual_issame, error=10 ** -3)
+                                                                         actual_issame, error=10 ** -1)
     #
 
     return tpr, fpr, accuracy, best_thresholds, thresholds
@@ -198,7 +198,7 @@ def evaluate_all(embeddings_agedb_30, issame_agedb_30, embeddings_cpf_fp, issame
     actual_issame = np.concatenate((issame_agedb_30, issame_cpf_fp, issame_lfw), 0)
 
     tpr, fpr, accuracy, best_thresholds, thresholds = calculate_roc_self(embeddings_1, embeddings_2,
-                                                                         actual_issame, error=10 ** -4)
+                                                                         actual_issame, error=10 ** -1)
     #
 
     return tpr, fpr, accuracy, best_thresholds, thresholds

@@ -8,7 +8,6 @@ import argparse
 import os
 import numpy as np
 from matplotlib import pyplot as plt
-plt.switch_backend('agg')
 from PIL import Image
 from torchvision import transforms as trans
 from torch.autograd import Variable
@@ -17,6 +16,7 @@ from easydict import EasyDict as edict
 from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 import io
+plt.switch_backend('agg')
 
 
 

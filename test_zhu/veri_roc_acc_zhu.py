@@ -255,7 +255,7 @@ def get_val_data(data_path):
 
 
 def get_features(agedb_30, cfp_fp, lfw, model):
-    batch_size = 100
+    batch_size = 500
     embeddings_agedb_30 = np.zeros([len(agedb_30), 512])
     embeddings_cpf_fp = np.zeros([len(cfp_fp), 512])
     embeddings_lfw = np.zeros([len(lfw), 512])

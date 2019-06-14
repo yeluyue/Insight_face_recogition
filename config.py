@@ -49,6 +49,10 @@ def get_config(training = True):
         conf.milestones = [5, 10, 16, 24, 30, 35, 40, 45]
         # conf.milestones = [5, 7, 10, 12, 15, 17]
         # conf.milestones = [12, 15, 18]
+        conf.milestones = [8, 12, 16, 18]
+        # conf.milestones = [2, 6, 8]
+        conf.milestones = [2, 4, 5, 6]
+
 
         conf.momentum = 0.9
         conf.pin_memory = True

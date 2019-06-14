@@ -92,7 +92,7 @@ class local_bin_test():
 if __name__ == "__main__":
     batch_size = 100
     bin_path = "/home/yeluyue/yeluyue/ICCV_challenge/train_data/ms1m-retinaface-t1/cfp_fp.bin"
-    model_path = "/home/yeluyue/dl/Datasets/work_space/ICCV2019_workspace/Msceleb_clean_zhu_mobilefacenet22_0.4_lr_e-1/save/model_2019-05-14-09-57_accuracy:0.0_step:2123636_None.pth"
+    model_path = "/home/yeluyue/yeluyue/InsightFace_Pytorch-master/work_space/Msceleb_clean_zhu_10k_mobilefacenet_y2_se32_0.4_lr_e-1/save/model_2019-06-03-15-54_accuracy:0.0_step:1035920_final.pth"
     bin_test = local_bin_test(batch_size, bin_path, model_path)
     bin_test.extract_feature()
 

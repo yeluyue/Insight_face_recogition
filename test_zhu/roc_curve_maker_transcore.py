@@ -88,13 +88,13 @@ def folder_roc_maker(folder_path):
     for root_path, foldername, filenames in os.walk(folder_path):
         for filename in filenames:
              if filename.endswith('.txt'):
-                print filename
+                print (filename)
         score_file = '{}/{}'.format(root_path, filename)
         roc_maker(score_file)
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print "Please input distance file.."
+        print("Please input distance file..")
     elif len(sys.argv) == 2:
     # score_file = "/media/minivision/OliverSSD/FaceRecognition/verification_select_best_models/result_v2_11_06_Face_ResNet20_fc_0.4_112x96_margin_2_6_C4_loss_iter_45000.txt"
         score_file = sys.argv[1]
@@ -109,7 +109,7 @@ if __name__ == '__main__':
             score_value = False
             roc_maker(score_file, score_value)
         else: 
-            print "Input wrong type True or False"
+            print("Input wrong type True or False")
         
   
 
